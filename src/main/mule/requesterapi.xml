@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="670f99e0-48d8-41e0-b5c1-f5963187eec3" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="2fb35a03-e9e3-47c7-9311-01535e86738b" >
+		<http:request-connection host="prachoice.us-e2.cloudhub.io" />
+	</http:request-config>
+	<flow name="requesterapiFlow" doc:id="5825d232-628d-4ffe-8a0d-4b5ebdd9df55" >
+		<http:listener doc:name="Listener" doc:id="95620875-a817-41a4-951c-f2399ed44d49" config-ref="HTTP_Listener_config" path="/request"/>
+		<set-variable value="#[uuid()]" doc:name="Set Variable" doc:id="37df9904-8fd2-4b02-934c-a7c2cae59881" variableName="correlationId"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7554f942-4ffb-474e-8307-2f32361de313" message="correlationId - #[vars.correlationId]"/>
+		<http:request method="POST" doc:name="Request" doc:id="1c21037f-3c20-43b3-bc43-5ad5aed7dd7d" config-ref="HTTP_Request_configuration" path="/choice" correlationId="#[correlationId]">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"correlationId" : vars.correlationId
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="431d6b6e-65ec-49dc-9130-db462186d077" message="correlationId - #[vars.correlationId] - received response - #[payload]"/>
+	</flow>
+</mule>
